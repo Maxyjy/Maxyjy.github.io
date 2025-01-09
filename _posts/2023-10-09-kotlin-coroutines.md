@@ -13,7 +13,7 @@ categories: Kotlin&Java
 
 这时，我们需要为网络请求创建一个工作子线程，例如直接使用Thread或者使用Java Executors。
 
-{% highlight c %}
+```javascript
     //Thread
     thread {
         //network request
@@ -25,11 +25,11 @@ categories: Kotlin&Java
         //network request
         getComment()
     }
-{% endhighlight %}
+```
 
 然后在getComment()方法中，则需要这样请求接口。
 
-{% highlight c %}
+```javascript
     private fun getComment() {
         apiClient.getComment("example post id")?.enqueue(object : Callback<CommentModel> {
             override fun onResponse(call: Call<CommentModel>, response: Response<CommentModel>) {
@@ -43,23 +43,23 @@ categories: Kotlin&Java
             }
         })
     }
-{% endhighlight %}
+```
 
 ### 开始使用协程
 
 使用协程，不再需要创建线程，取而代之的是创建一个协程。
 
-{% highlight c %}
+```javascript
     //Kotlin Coroutines
     //Dispatcher.IO 指定协程运行在用来执行磁盘或网络I/O的调度器中
     lifecycleScope.launch(Dispatchers.IO) {
         getComment()
     }
-{% endhighlight %}
+```
 
 而getComment方法中，代码可以得到极大的简化，不再需要使用Callback接口来接收请求结果。
 
-{% highlight c %}
+```javascript
     private suspend fun getComment() {
         val apiClient = CommentApiClient()
         try {
@@ -71,7 +71,7 @@ categories: Kotlin&Java
             textView.text = "network error" //请求失败
         }
     }
-{% endhighlight %}
+```
 
 ### 使用协程处理串行任务
 
@@ -79,7 +79,7 @@ categories: Kotlin&Java
 
 可能我们会这样写，请求UserInfo返回结果后，在onResponse回调中再请求Comment，然后在getComment的onResponse方法中更新UI，标准的嵌套地狱。不过，这仅仅是2个请求串行，如果是5个…10个…
 
-{% highlight c %}
+```javascript
     //先请求UserInfo
     apiClient.getUserInfo()?.enqueue(object : Callback<UserInfo> {
         override fun onResponse(call: Call<UserInfo>, response: Response<UserInfo>) {
@@ -92,11 +92,11 @@ categories: Kotlin&Java
              textView.text = response.body().toString()
         ...
     }
-{% endhighlight %}
+```
 
 但，使用协程，只需要这样。
 
-{% highlight c %}
+```javascript
     //请求用户信息
     val userInfo = apiClient.getUserInfo()
     //使用用户信息中的id作为参数，请求用户评论
@@ -104,7 +104,7 @@ categories: Kotlin&Java
     withContext(Dispatchers.Main) { //切换到主线程
         textView.text = comment?.body //请求成功
     }
-{% endhighlight %}
+```
 
 
 ### 使用协程处理并发任务
@@ -116,7 +116,7 @@ categories: Kotlin&Java
 但在协程里，只需要这样。
 
 
-{% highlight c %}
+```javascript
     //请求用户昵称
     val userName = apiClient.getUserName()
     //请求用户头像
@@ -126,7 +126,7 @@ categories: Kotlin&Java
         //请求成功
         updateUI(userName.await(),userAvatar.await())
     }
-{% endhighlight %}
+```
 
 *请求用户昵称* 、*请求用户头像* 都是异步操作，但使用协程可以将代码写出非异步的风格。
 

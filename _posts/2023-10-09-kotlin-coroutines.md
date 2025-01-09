@@ -1,13 +1,9 @@
 ---
 title:  "What can we do with Kotlin Coroutines?"
-mathjax: false
 layout: post
 categories: Kotlin&Java
 ---
 
-## What can we do with Kotlin Coroutines?
-
-### 引言
 
 我们知道，在Android中，在主线程中执行耗时较长的异步任务是不合适的，这会阻塞处理UI事件的主线程，在Android4.0后，会抛出NetworkOnMainThreadException()来限制开发者在主线程中做网络请求。
 

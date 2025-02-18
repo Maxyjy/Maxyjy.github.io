@@ -1,0 +1,131 @@
+---
+title:  "Markdown examples"
+layout: post
+---
+
+目前体验下来感觉只是帮我们做了当前页面page的自增，更多的使用方法待补充。
+
+
+## Model
+https://jsonplaceholder.typicode.com/，是一个提供假json数据接口的网站，给前端开发者来做Demo最合适不过，这里我拿其中的相册列表接口来做一个相册列表页面。
+
+data class AlbumModel(
+    val albumId: Int,
+    val id: Int,
+    val title: String,
+    val url: String,
+    val thumbnailUrl: String
+)
+interface AlbumDataApi {
+    @GET("albums/{page}/photos")
+    suspend fun getAlbumByPage(@Path("page") page: Int, @Query("pageSize") pageSize: Int): List<AlbumModel>
+}
+## ViewModel
+在ViewModel中需要我们去构造一个Pager对象，设置一些分页参数，初始化Item数量，每页的Item数量，预加载大小，最大item数量等。
+
+然后通过Pager中方法可以拿到Flow或者LiveData，我这里选择了使用Flow
+
+class AlbumViewModel : ViewModel() {
+ 
+    private val client = APIClient
+    private val pager = Pager(
+        config = PagingConfig(
+            initialLoadSize = AlbumPagingSource.PAGE_SIZE,
+            pageSize = AlbumPagingSource.PAGE_SIZE,
+            prefetchDistance = AlbumPagingSource.PAGE_SIZE,
+            enablePlaceholders = false
+        ),
+        pagingSourceFactory = { AlbumPagingSource(client) }
+    )
+ 
+    //返回Album数据流
+    fun getHomeDataFlow(): Flow<PagingData<AlbumModel>> {
+        return pager.flow
+    }
+ 
+}
+## RecycleView 适配器
+继承PagingDataAdatper，构造参数需要一个DiffUtil，方法中用相册的Id来判断是不是同一个相册Item
+
+同样需要重写onBindViewHolder、onCreateViewHolder方法和新建类AlbumViewHolder类继承ViewHolder
+
+不过父类中提供了getItem(position: Int)方法来直接获取AlbumModel，解决了之前需要我们自己从数组里取的繁琐。
+
+class AlbumAdapter :
+    PagingDataAdapter<AlbumModel, AlbumAdapter.AlbumViewHolder>(DiffCallback) {
+ 
+    companion object {
+        private val DiffCallback = object : DiffUtil.ItemCallback<AlbumModel>() {
+            override fun areItemsTheSame(oldItem: AlbumModel, newItem: AlbumModel): Boolean {
+                return oldItem.id == newItem.id
+            }
+ 
+            override fun areContentsTheSame(oldItem: AlbumModel, newItem: AlbumModel): Boolean {
+                return oldItem.id == newItem.id
+            }
+        }
+    }
+ 
+    override fun onBindViewHolder(holder: AlbumViewHolder, position: Int) {
+        val albumModel = getItem(position)
+        albumModel?.let {
+            holder.tvAlbumTitle.text = albumModel.title
+            Glide.with(holder.itemView.context)
+                .load(albumModel.url)
+                .into(holder.ivAlbumImage)
+        }
+    }
+ 
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AlbumViewHolder {
+        ...
+    }
+ 
+    class AlbumViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        ...
+    }
+}
+class AlbumPagingSource(private val client: APIClient) : PagingSource<Int, AlbumModel>() {
+ 
+    companion object {
+        const val PAGE_SIZE = 10
+    }
+ 
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, AlbumModel> {
+        return try {
+            val currentPage = params.key ?: 1
+            val pageSize = params.loadSize
+            val AlbumModels = client.getHomeData(currentPage, pageSize)
+            val preKey = if (currentPage > 1) currentPage - 1 else null
+            val nextKey = if (AlbumModels.isNotEmpty()) currentPage + 1 else null
+            LoadResult.Page(AlbumModels, preKey, nextKey)
+        } catch (e: Exception) {
+            LoadResult.Error(throwable = e)
+        }
+ 
+    }
+ 
+    override fun getRefreshKey(state: PagingState<Int, AlbumModel>): Int? {
+        return state.anchorPosition?.let { anchorPosition ->
+            state.closestPageToPosition(anchorPosition)?.prevKey?.plus(1)
+                ?: state.closestPageToPosition(anchorPosition)?.nextKey?.minus(1)
+        }
+    }
+ 
+}
+## Fragment
+最后我们在Fragment中收集ViewModel中的AlbumData Flow，通过adapter的submitData方法通知PagingDataAdpater来刷新数据。
+
+    override fun onCreateView(...): View {
+        ...
+        //给RecycleView设置Adapter和LayoutManager
+        binding.rvAlbum.layoutManager = GridLayoutManager(activity, 2)
+        binding.rvAlbum.adapter = adapter
+ 
+        //收集相册数据
+        lifecycleScope.launch {
+            homeViewModel.getHomeDataFlow().collect {
+                adapter.submitData(it)
+            }
+        }
+        return binding.root
+    }

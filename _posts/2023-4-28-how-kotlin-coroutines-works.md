@@ -2,7 +2,7 @@ Kotlin Coroutines
 2023-4-28 17:17   Kotlin & Java
 文中代码只表达其含义，因为实际代码太过复杂，不便于理解。
 
-前言
+## 前言
 Kotlin Coroutines 依赖于强大的 Kotlin Complier 编译器，将异步 Callback 回调式编程转化为同步代码写法，那其中是如何实现的呢 ？
 
 // 回调嵌套
@@ -20,7 +20,7 @@ suspend fun postArticle(article: Article) {
     val post = createPost(token, article)
     processPost(post)
 }
-Continuation Passing Style
+## Continuation Passing Style
 简称CPS，翻译续体传递风格，好听的名字背后，实际上和 Callback 很相似
 
 CPS的C，Continuation 只是一个接口，有两个方法 resume 和 resumeWithException，对应 Callback 的 onResponse、onFailure 方法。
@@ -197,7 +197,7 @@ fun postArticle(article: Article) {
             }
         }
     }
-总结
+## 总结
 我理解的 CPS ，原理其实是协程内的 suspend 方法根据 label 区分，并将起始点方法 postArticle()，放在 Continuation 状态机对象的resume()方法中，然后将这个 Continuation 的引用传递给每个 suspend 方法，方法执行完后，label 发生变化，再通过 Continuation 的 resume() 方法去重新执行起始点 postArticle() 方法，逐步根据 label 顺序执行所有 suspend 方法。
 
 

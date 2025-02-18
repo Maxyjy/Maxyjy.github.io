@@ -1,4 +1,4 @@
-一、Flow 流
+## 一、Flow 流
 Kotlin Flow 流实现实现异步的返回多个值
 
 fun simple(): Flow<Int> = flow { // 流构建器
@@ -42,8 +42,8 @@ fun number(): Flow<Int> = flow { //在流构建器中改变了上下文为Dispat
         emit(i)
     }
 }.flowOn(Dispatchers.Default)
-二、操作符
-1、过度流操作符
+## 二、操作符
+### 1.过度流操作符
 例如 map 、filter 过渡操作符应用于上游流，并返回下游流。操作符中的代码可以调用挂起函数。这些操作符也是冷操作符，就像流一样。这类操作符本身不是挂起函数。它运行的速度很快，返回新的转换流的定义。
 
 suspend fun performRequest(request: Int): String {
@@ -62,7 +62,7 @@ fun main() = runBlocking {
         .map { request -> analyzeResponse(request) } //处理后段返回的结果
         .collect { result -> println(result) } //打印数据
 }
-筛选操作符
+#### 筛选操作符
 fun main() = runBlocking {
     (1..5).asFlow()
         .filter {
@@ -76,7 +76,7 @@ fun main() = runBlocking {
             println("Collect $it")//2、4
         }
 }
-转换操作符
+#### 转换操作符
 在流转换操作符中，最通用的一种 transform 。它可以用来模仿简单的转换，例如 map 与 filter，以及实施更复杂的转换。 使用 transform 操作符，我们可以 emit 任意值任意次。
 
 fun main() = runBlocking {
@@ -87,7 +87,7 @@ fun main() = runBlocking {
         }
         .collect { response -> println(response) }
 }
-限长操作符
+#### 限长操作符
 限长过渡操作符（例如 take）在流触及相应限制的时候会将它的执行取消。协程中的取消操作总是通过抛出异常来执行，这样所有的资源管理函数（如 try {...} finally {...} 块）会在取消的情况下正常运行：
 
 fun numbers(): Flow<Int> = flow {
@@ -104,22 +104,22 @@ fun main() = runBlocking<Unit> {
     numbers()
         .take(2) // 只获取前两个，n(value) }
 }
-2、末端操作符
+### 2、末端操作符
 末端操作符是在流上用于启动流收集的挂起函数。 collect 是最基础的末端操作符，但是还有另外一些更方便使用的。
 
-reduce 求和操作符
+#### reduce 求和操作符
     //求和
     val sum = (1..5).asFlow()
         .map { it * it } // 数字 1 至 5 的平方 1、4、9、16、25
         .reduce { a, b -> a + b } // 求和（末端操作符）
     println(sum) //sum = 55
-fold 带初始值求和
+#### fold 带初始值求和
     //带初始值求和
     val fold = (1..5).asFlow()
         .map { it * it } // 数字 1 至 5 的平方
         .fold(100) { initial, value -> initial + value } // 求和并加上初始值100
     println(fold) //sum = 155
-toList 转化为list
+#### toList 转化为list
     //转为list
     val list = (1..5).asFlow()
         .map { it * it } // 数字 1 至 5 的平方
@@ -127,22 +127,23 @@ toList 转化为list
     list.forEach {
         println(it) //转化为list 1、4、9、16、25
     }
-first 只收集第一个元素的
+#### first 只收集第一个元素的
     //只收集第一个元素的流
     val first = (1..5).asFlow()
         .map { it } // 数字 5 的平方
         .first()
     println(first) //first = 1
-single 只收集一个元素的流
+#### single 只收集一个元素的流
     //限制只有一个元素的流 多于1个或null会抛出异常
     val single = flowOf(5)
         .map { it * it } // 数字 5 的平方
         .single()
     println(single) //single = 25
-singleOrNull 限制只有一个元素或者为空的流
+#### singleOrNull 限制只有一个元素或者为空的流
  
     //限制只有一个元素的流 多于1个会抛出异常 允许为null
     val singleOrNull = flowOf(5)
         .map { it * it } // 数字 5 的平方
         .singleOrNull()
+    println(singleOrNull) //single = 25
     println(singleOrNull) //single = 25

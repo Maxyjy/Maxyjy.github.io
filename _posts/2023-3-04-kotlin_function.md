@@ -4,6 +4,8 @@ layout: post
 categories: Kotlin&Java
 ---
 
+Kotlin Function 的一些用法
+
 默认参数 / Default arguments
 Kotlin 的允许提供变量的默认值，构造时可以选择不传参直接使用默认值。
 

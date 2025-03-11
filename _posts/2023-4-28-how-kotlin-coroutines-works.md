@@ -1,11 +1,11 @@
 ---
-title:  "Kotlin Coroutines"
+title:  "How Kotlin Coroutines Works?"
 layout: post
 categories: Kotlin&Java
 ---
 
-## 前言
-Kotlin Coroutines 依赖于强大的 Kotlin Complier 编译器，将异步 Callback 回调式编程转化为同步代码写法，那其中是如何实现的呢 ？
+Kotlin Coroutines 依赖于强大的 Kotlin Complier 编译器，将异步 Callback 回调式编程转化为同步代码写法，那其中是如何实现的呢？
+
 
 // 回调嵌套
 fun postItem(item: Item) {

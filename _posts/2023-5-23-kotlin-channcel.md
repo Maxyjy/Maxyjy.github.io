@@ -1,3 +1,9 @@
+---
+title:  "Kotlin Channel"
+layout: post
+categories: Kotlin&Java
+---
+
 ## 一、Flow 流
 Kotlin Flow 流实现实现异步的返回多个值
 

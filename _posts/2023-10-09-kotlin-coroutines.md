@@ -4,11 +4,10 @@ layout: post
 categories: Kotlin&Java
 ---
 
+使用 Kotlin Coroutines 简化线程切换，比RxJava繁琐的操作符更简单
 
 
-我们知道，在Android中，在主线程中执行耗时较长的异步任务是不合适的，这会阻塞处理UI事件的主线程，在Android4.0后，会抛出NetworkOnMainThreadException()来限制开发者在主线程中做网络请求。
-
-这时，我们需要为网络请求创建一个工作子线程，例如直接使用Thread或者使用Java Executors。
+异步网络请求，我们需要为网络请求创建一个工作子线程，例如直接使用Thread或者使用Java Executors。
 
 ```
     //Thread
